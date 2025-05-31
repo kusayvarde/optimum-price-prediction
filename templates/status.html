@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Status - Optimum Price</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .status-container {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .status-indicator {
+            padding: 8px 12px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .running { background-color: #fff3cd; color: #856404; }
+        .searching { background-color: #d1ecf1; color: #0c5460; }
+        .optimizing { background-color: #d4edda; color: #155724; }
+        .completed { background-color: #d4edda; color: #155724; }
+        .failed { background-color: #f8d7da; color: #721c24; }
+        
+        .progress-container {
+            height: 30px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #4CAF50;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+            transition: width 0.5s;
+        }
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Task Status</h1>
+    
+    <div class="status-container">
+        <h2>Processing: {{ task.product_name }}</h2>
+        
+        <div class="status-indicator {{ task.status }}">
+            {% if task.status == 'running' %}
+                Initializing...
+            {% elif task.status == 'searching' %}
+                Searching for product data...
+            {% elif task.status == 'optimizing' %}
+                Calculating optimal price...
+            {% elif task.status == 'completed' %}
+                Complete
+            {% elif task.status == 'failed' %}
+                Failed: {{ task.error }}
+            {% endif %}
+        </div>
+        
+        <p><strong>Started at:</strong> {{ task.start_time }}</p>
+        
+        {% if task.product_count is defined %}
+        <p><strong>Products found:</strong> {{ task.product_count }}</p>
+        {% endif %}
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progress" style="width: 0%"></div>
+        </div>
+        
+        {% if task.status == 'completed' %}
+            <a href="{{ url_for('results', task_id=task_id) }}" class="btn">View Results</a>
+        {% elif task.status == 'failed' %}
+            <a href="{{ url_for('index') }}" class="btn">Try Again</a>
+        {% else %}
+            <p>Please wait while we process your request...</p>
+        {% endif %}
+    </div>
+    
+    {% if task.status not in ['completed', 'failed'] %}
+    <script>
+        // Auto-refresh status
+        let progressValue = 0;
+        
+        function updateProgress() {
+            // Simple animation for progress bar
+            if ('{{ task.status }}' === 'searching') {
+                progressValue = Math.min(progressValue + 1, 40);
+            } else if ('{{ task.status }}' === 'optimizing') {
+                progressValue = Math.min(progressValue + 1, 80);
+            }
+            document.getElementById('progress').style.width = progressValue + '%';
+        }
+        function checkStatus() {
+            fetch('/api/status/{{ task_id }}')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.status && data.status !== '{{ task.status }}') {
+                        window.location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking status:', error);
+                    // Stop checking after consecutive errors
+                    if (window.errorCount === undefined) window.errorCount = 0;
+                    window.errorCount++;
+                    if (window.errorCount > 5) {
+                        clearInterval(window.statusInterval);
+                        document.getElementById('progress').style.backgroundColor = '#dc3545';
+                    }
+                });
+        }
+          // Update progress bar every 300ms
+        window.progressInterval = setInterval(updateProgress, 300);
+        
+        // Check task status every 2 seconds
+        window.statusInterval = setInterval(checkStatus, 2000);
+    </script>
+    {% endif %}
+</body>
+</html>

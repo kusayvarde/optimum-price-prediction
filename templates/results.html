@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimization Results - Optimum Price</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        .results-container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            background-color: #f9f9f9;
+        }
+        .highlight {
+            background-color: #d4edda;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .data-table th {
+            background-color: #f2f2f2;
+        }
+        .data-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        /* Canvas for chart */
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Optimization Results</h1>
+    
+    <div class="results-container">
+        <h2>{{ task.product_name }}</h2>
+        
+        {% if task.result %}
+        <div class="highlight">
+            <h3>Optimized Price Strategy</h3>
+            <p><strong>Optimum Price:</strong> {{ "%.2f"|format(task.result.optimum_price) }} TL</p>
+            <p><strong>Maximum Profit:</strong> {{ "%.2f"|format(task.result.maximum_profit) }} TL</p>
+            <p><strong>Estimated Demand:</strong> {{ "%.2f"|format(task.result.estimated_demand) }} units</p>
+        </div>
+        
+        <h3>Demand Model Parameters</h3>
+        <p><strong>Maximum Theoretical Demand (a_d):</strong> {{ "%.2f"|format(task.result.demand_parameters.a_d) }}</p>
+        <p><strong>Price Sensitivity (b_d):</strong> {{ "%.6f"|format(task.result.demand_parameters.b_d) }}</p>
+        <p><strong>Model Accuracy (R²):</strong> {{ "%.4f"|format(task.result.demand_parameters.r2) }}</p>
+        <p><strong>Cost:</strong> {{ task.result.cost }} TL</p>
+        
+        <h3>Analysis Visualization</h3>
+        <div class="chart-container">
+            <canvas id="profitChart"></canvas>
+        </div>
+        
+        <h3>Data Summary</h3>
+        <p><strong>Products Analyzed:</strong> {{ task.product_count }}</p>
+        <p><strong>Price Range:</strong> {{ "%.2f"|format(task.result.price_range[0]) }} - {{ "%.2f"|format(task.result.price_range[1]) }} TL</p>
+
+        
+        {% else %}
+        <p>No results available. Please try again.</p>
+        {% endif %}
+        
+        <a href="{{ url_for('index') }}" class="btn">Start New Optimization</a>
+    </div>
+    
+    {% if task.result %}
+    <script>
+        // Create chart for visualization
+        const ctx = document.getElementById('profitChart').getContext('2d');
+        
+        // Parameters for visualization
+        const a_d = {{ task.result.demand_parameters.a_d }};
+        const b_d = {{ task.result.demand_parameters.b_d }};
+        const cost = {{ task.result.cost }};
+        const optimalPrice = {{ task.result.optimum_price }};
+        const minPrice = {{ task.result.price_range[0] }};
+        const maxPrice = {{ task.result.price_range[1] }};
+        
+        // Generate data points
+        const pricePoints = [];
+        const profitPoints = [];
+        const demandPoints = [];
+        
+        // Create 50 evenly spaced points for the chart
+        const step = (maxPrice - minPrice) / 50;
+        for (let price = minPrice; price <= maxPrice; price += step) {
+            const demand = Math.max(0, a_d - b_d * price);
+            const profit = (price - cost) * demand;
+            
+            pricePoints.push(price);
+            profitPoints.push(profit);
+            demandPoints.push(demand);
+        }
+        
+        // Create chart
+        const myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: pricePoints.map(p => p.toFixed(0)),
+                datasets: [
+                    {
+                        label: 'Profit (TL)',
+                        data: profitPoints,
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                        yAxisID: 'y',
+                        fill: true
+                    },
+                    {
+                        label: 'Demand (units)',
+                        data: demandPoints,
+                        borderColor: 'rgba(33, 150, 243, 1)',
+                        backgroundColor: 'rgba(33, 150, 243, 0.2)',
+                        yAxisID: 'y1',
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Price (TL)'
+                        }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Profit (TL)'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Demand (units)'
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    }
+                },
+                plugins: {
+                    annotation: {
+                        annotations: {
+                            line1: {
+                                type: 'line',
+                                xMin: optimalPrice,
+                                xMax: optimalPrice,
+                                borderColor: 'red',
+                                borderWidth: 2,
+                                label: {
+                                    content: 'Optimal Price',
+                                    enabled: true,
+                                    position: 'top'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+    {% endif %}
+</body>
+</html>
