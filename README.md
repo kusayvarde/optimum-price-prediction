@@ -17,7 +17,7 @@ This project is a web application for finding the optimum price of a product usi
 ## Installation
 1. Clone the repository:
    ```sh
-   git clone <repository-url>
+   git clone [https://github.com/kusayvarde/optimum-price-prediction.git](https://github.com/kusayvarde/optimum-price-prediction.git)
    cd optimum-price-finder
    ```
 2. Install dependencies:
