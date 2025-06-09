@@ -70,26 +70,26 @@
     <h1>Task Status</h1>
     
     <div class="status-container">
-        <h2>Processing: {{ task.product_name }}</h2>
+        <h2>'Analiz Ediliyor': {{ task.product_name }}</h2>
         
         <div class="status-indicator {{ task.status }}">
             {% if task.status == 'running' %}
-                Initializing...
+                Başlatılıyor...
             {% elif task.status == 'searching' %}
-                Searching for product data...
+                Ürün verileri aranıyor...
             {% elif task.status == 'optimizing' %}
-                Calculating optimal price...
+                Optimum fiyat hesaplanıyor...
             {% elif task.status == 'completed' %}
-                Complete
+                Tamamlandı
             {% elif task.status == 'failed' %}
-                Failed: {{ task.error }}
+                Başarısız: {{ task.error }}
             {% endif %}
         </div>
         
-        <p><strong>Started at:</strong> {{ task.start_time }}</p>
+        <p><strong>Başlangıç Zamanı:</strong> {{ task.start_time }}</p>
         
         {% if task.product_count is defined %}
-        <p><strong>Products found:</strong> {{ task.product_count }}</p>
+        <p><strong>Bulunan Ürünler:</strong> {{ task.product_count }}</p>
         {% endif %}
         
         <div class="progress-container">
@@ -97,11 +97,11 @@
         </div>
         
         {% if task.status == 'completed' %}
-            <a href="{{ url_for('results', task_id=task_id) }}" class="btn">View Results</a>
+            <a href="{{ url_for('results', task_id=task_id) }}" class="btn">Sonuçları Görüntüle</a>
         {% elif task.status == 'failed' %}
-            <a href="{{ url_for('index') }}" class="btn">Try Again</a>
+            <a href="{{ url_for('index') }}" class="btn">Tekrar Dene</a>
         {% else %}
-            <p>Please wait while we process your request...</p>
+            <p>Talebiniz işlenirken lütfen bekleyin...</p>
         {% endif %}
     </div>
     

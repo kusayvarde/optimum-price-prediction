@@ -29,82 +29,60 @@ def get_price_range(prices):
     
     return lowest_price, highest_price
 
-def estimate_demand_parameters(prices, ratings, max_theoretical_demand=None):
+def estimate_demand_parameters(prices, max_theoretical_demand=None):
     """
     Estimate demand function parameters using linear regression
     
     Args:
         prices (list): List of product prices
-        ratings (list): List of product ratings
         max_theoretical_demand (int, optional): Maximum theoretical demand at zero price
-        
+
     Returns:
         dict: Dictionary with demand parameters and regression statistics
     """
     logger.info("Estimating demand parameters...")
     
     # Validate input data
-    if not prices or not ratings:
-        logger.error("Empty prices or ratings data")
+    if not prices:
+        logger.error("Empty prices data")
         return None
-        
-    if len(prices) != len(ratings):
-        logger.error("Prices and ratings lists have different lengths")
-        return None
+
+    _, highest_price = get_price_range(prices)
     
+    np.random.seed(42)
+    fake_prices = np.linspace(0, highest_price, 3000)
+    # Simulate demand: higher price, lower rating (demand)
+    a_d = float(max_theoretical_demand) if max_theoretical_demand else input("Enter maximum theoretical demand (a_d): ")
+    b_d = a_d / highest_price
+    demand = a_d - b_d * fake_prices + np.random.normal(0, 5, size=fake_prices.shape)
+
     # Create DataFrame with price and rating data
     data = pd.DataFrame({
-        "price": prices,
-        "rating": ratings
+        "price": fake_prices,
+        "demand": demand
     })
     
-    data['rating'] = data['rating'] * 100
     # Remove any rows with missing data
     data = data.dropna()
     
     if data.empty:
         logger.error("No valid data for demand estimation")
         return None
-        
-    # Normalize ratings to a 0-1 scale to represent demand proportion
-    max_rating = data['rating'].max()
-    data['demand_proportion'] = data['rating'] / max_rating
 
     # Estimate theoretical maximum demand (a_d) and price sensitivity (b_d)
     # Using the model: demand_proportion = 1 - (b_d/a_d) * price
     X = data[['price']]
-    y = 1 - data['demand_proportion']  # Inverse of demand proportion
+    y = data['demand']  # Inverse of demand proportion
 
     try:
         # Try with intercept first for better statistical properties
-        model_with_intercept = LinearRegression()
-        model_with_intercept.fit(X, y)
-        intercept = model_with_intercept.intercept_
-        
-        # If intercept is close to zero, use model without intercept
-        if abs(intercept) < 0.05:
-            logger.info("Intercept close to zero, using model without intercept")
-            model = LinearRegression(fit_intercept=False)
-        else:
-            logger.info(f"Using model with intercept: {intercept:.6f}")
-            model = model_with_intercept
-            
+        model = LinearRegression()
         model.fit(X, y)
-          # Get max_theoretical_demand from user if not provided
-        if max_theoretical_demand is None:
-            # Use a reasonable default if no input is available (web mode)
-            max_theoretical_demand = max(100, int(len(prices) * 0.1))  # Default based on data size
-            logger.info(f"Using default max theoretical demand: {max_theoretical_demand}")
-            
-        # Calculate a_d and b_d
-        a_d = max_theoretical_demand
         
-        if model.coef_[0] < 0:
-            logger.warning("Negative price sensitivity detected, using absolute value")
-            b_d = abs(model.coef_[0]) * max_theoretical_demand
-        else:
-            b_d = model.coef_[0] * max_theoretical_demand
-            
+        a_d = model.intercept_
+        b_d = -model.coef_[0]
+        logger.info(f"Using default max theoretical demand: {max_theoretical_demand}")
+
         # Calculate model quality metrics
         from sklearn.metrics import r2_score
         y_pred = model.predict(X)
@@ -211,13 +189,12 @@ def golden_section_search(func, a, b, tol=1e-3):
     return optimal_x, maximum_value, iteration
 
 
-def run_optimization(prices, ratings, cost=None, max_theoretical_demand=None):
+def run_optimization(prices, cost=None, max_theoretical_demand=None):
     """
     Run the complete optimization workflow
     
     Args:
         prices (list): List of product prices
-        ratings (list): List of product ratings
         cost (float, optional): Product cost
         max_theoretical_demand (int, optional): Maximum theoretical demand
         
@@ -229,7 +206,7 @@ def run_optimization(prices, ratings, cost=None, max_theoretical_demand=None):
     logger.info(f"Price range: {lowest_price:.2f} - {highest_price:.2f}")
     
     # Estimate demand parameters
-    params = estimate_demand_parameters(prices, ratings, max_theoretical_demand)
+    params = estimate_demand_parameters(prices, max_theoretical_demand)
     if not params:
         logger.error("Failed to estimate demand parameters")
         return None
@@ -286,7 +263,7 @@ if __name__ == "__main__":
     
     if prices and ratings:
         # Run optimization
-        results = run_optimization(prices, ratings)
+        results = run_optimization(prices)
         
         if results:
             # Print results

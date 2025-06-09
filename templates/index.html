@@ -76,7 +76,7 @@
     </style>
 </head>
 <body>
-    <h1>Optimum Price Calculator</h1>
+    <h1>Optimum Fiyat Hesaplayıcısı</h1>
     
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -91,34 +91,33 @@
     <div class="form-container">
         <form action="/optimize" method="post">
             <div class="form-group">
-                <label for="name">Product Name:</label>
-                <input type="text" id="name" name="name" required placeholder="Enter product name (e.g., laptop, phone, headphones)">
+                <label for="name">Ürün Adı:</label>
+                <input type="text" id="name" name="name" required placeholder="Ürün adını girin (örneğin, dizüstü bilgisayar, telefon, kulaklık)">
             </div>
             
             <div class="form-group">
-                <label for="cost">Product Cost (TL):</label>
-                <input type="number" id="cost" name="cost" required min="1" placeholder="Enter your cost per unit">
+                <label for="cost">Ürün Maliyeti (TL):</label>
+                <input type="number" id="cost" name="cost" required min="1" placeholder="Birim başına maliyetinizi girin">
             </div>
-            
             <div class="form-group">
-                <label for="demand">Maximum Theoretical Demand (units):</label>
-                <input type="number" id="demand" name="demand" required min="1" placeholder="Enter estimated maximum demand">
+                <label for="demand">Maksimum Teorik Talep (birimler):</label>
+                <input type="number" id="demand" name="demand" required min="1" placeholder="Tahmini maksimum talebi girin">
             </div>
             
-            <button type="submit">Calculate Optimum Price</button>
+            <button type="submit">Optimum Fiyatı Hesapla</button>
         </form>
     </div>
     
     <div class="info-box">
-        <h3>How it works</h3>
-        <p>This tool helps you find the optimal price for your product by:</p>
+        <h3>Nasıl Çalışır</h3>
+        <p>Bu araç, ürününüz için optimum fiyatı bulmanıza yardımcı olur:</p>
         <ol>
-            <li>Collecting real market data for your product from N11.com</li>
-            <li>Analyzing the relationship between price and consumer interest</li>
-            <li>Estimating demand at different price points</li>
-            <li>Calculating the price that maximizes your profit</li>
+            <li>N11.com'dan ürününüz için gerçek piyasa verilerini toplama</li>
+            <li>Fiyat ile tüketici ilgisi arasındaki ilişkiyi analiz etme</li>
+            <li>Farklı fiyat noktalarında talebi tahmin etme</li>
+            <li>Karınızı maksimize eden fiyatı hesaplama</li>
         </ol>
-        <p><strong>Note:</strong> The calculation depends on the quality of available market data and your input parameters.</p>
+        <p><strong>Not:</strong> Hesaplama, mevcut piyasa verilerinin kalitesine ve girdi parametrelerinize bağlıdır.</p>
     </div>
 </body>
 </html>

@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, f
 import logging
 import os
 import threading
-import time
 from datetime import datetime
 
 # Configure logging
@@ -141,7 +140,6 @@ def run_background_task(task_id, product_name, product_cost, max_demand):
         # Run optimization
         results = run_optimization(
             prices, 
-            ratings, 
             cost=product_cost, 
             max_theoretical_demand=max_demand
         )

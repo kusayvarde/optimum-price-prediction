@@ -77,33 +77,33 @@
         
         {% if task.result %}
         <div class="highlight">
-            <h3>Optimized Price Strategy</h3>
-            <p><strong>Optimum Price:</strong> {{ "%.2f"|format(task.result.optimum_price) }} TL</p>
-            <p><strong>Maximum Profit:</strong> {{ "%.2f"|format(task.result.maximum_profit) }} TL</p>
-            <p><strong>Estimated Demand:</strong> {{ "%.2f"|format(task.result.estimated_demand) }} units</p>
+            <h3>Optimize Edilmiş Fiyat Stratejisi</h3>
+            <p><strong>Optimum Fiyat:</strong> {{ "%.2f"|format(task.result.optimum_price) }} TL</p>
+            <p><strong>Maximum Kar:</strong> {{ "%.2f"|format(task.result.maximum_profit) }} TL</p>
+            <p><strong>Tahmini Talep:</strong> {{ "%.2f"|format(task.result.estimated_demand) }} units</p>
         </div>
         
-        <h3>Demand Model Parameters</h3>
-        <p><strong>Maximum Theoretical Demand (a_d):</strong> {{ "%.2f"|format(task.result.demand_parameters.a_d) }}</p>
-        <p><strong>Price Sensitivity (b_d):</strong> {{ "%.6f"|format(task.result.demand_parameters.b_d) }}</p>
-        <p><strong>Model Accuracy (R²):</strong> {{ "%.4f"|format(task.result.demand_parameters.r2) }}</p>
-        <p><strong>Cost:</strong> {{ task.result.cost }} TL</p>
+        <h3>Talep Modeli Parametreleri</h3>
+        <p><strong>Maksimum Teorik Talep (a_d):</strong> {{ "%.2f"|format(task.result.demand_parameters.a_d) }}</p>
+        <p><strong>Fiyat Duyarlılığı (b_d):</strong> {{ "%.6f"|format(task.result.demand_parameters.b_d) }}</p>
+        <p><strong>Model Doğruluğu (R²):</strong> {{ "%.4f"|format(task.result.demand_parameters.r2) }}</p>
+        <p><strong>Fiyat:</strong> {{ task.result.cost }} TL</p>
         
-        <h3>Analysis Visualization</h3>
+        <h3>Analiz Görselleştirme</h3>
         <div class="chart-container">
             <canvas id="profitChart"></canvas>
         </div>
         
-        <h3>Data Summary</h3>
-        <p><strong>Products Analyzed:</strong> {{ task.product_count }}</p>
-        <p><strong>Price Range:</strong> {{ "%.2f"|format(task.result.price_range[0]) }} - {{ "%.2f"|format(task.result.price_range[1]) }} TL</p>
+        <h3>Veri Özeti</h3>
+        <p><strong>Analiz Edilen Ürünler:</strong> {{ task.product_count }}</p>
+        <p><strong>Fiyat Aralığı:</strong> {{ "%.2f"|format(task.result.price_range[0]) }} - {{ "%.2f"|format(task.result.price_range[1]) }} TL</p>
 
         
         {% else %}
-        <p>No results available. Please try again.</p>
+        <p>Sonuç bulunamadı. Tekrar deneyin</p>
         {% endif %}
         
-        <a href="{{ url_for('index') }}" class="btn">Start New Optimization</a>
+        <a href="{{ url_for('index') }}" class="btn">Yeni Optimizasyon Başlat</a>
     </div>
     
     {% if task.result %}
